@@ -9,7 +9,7 @@ if(ANDROID)
     # For android, using SDL's CMakeLists is not necessary (and doesn't work without too much effort)
     include(android-sdl2.cmake)
 
-elseif()
+else()
     if(WIN32)
         find_package(OpenGL REQUIRED)
         list(APPEND EXTRA_LIBS ${OPENGL_LIBRARIES})
