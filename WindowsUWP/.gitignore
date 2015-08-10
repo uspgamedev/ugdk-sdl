@@ -3,3 +3,4 @@
 /Objs
 /Generated Files
 *.vcxproj.filters
+*.vcxproj.user
