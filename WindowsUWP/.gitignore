@@ -2,3 +2,4 @@
 /Release
 /Objs
 /Generated Files
+*.vcxproj.filters
