@@ -399,10 +399,10 @@ void SDL_WinRTApp::SetWindow(CoreWindow^ window)
     // Make sure we know when a user has opened the app's settings pane.
     // This is needed in order to display a privacy policy, which needs
     // to be done for network-enabled apps, as per Windows Store requirements.
-    //using namespace Windows::UI::ApplicationSettings;
-    //SettingsPane::GetForCurrentView()->CommandsRequested +=
-    //    ref new TypedEventHandler<SettingsPane^, SettingsPaneCommandsRequestedEventArgs^>
-    //        (this, &SDL_WinRTApp::OnSettingsPaneCommandsRequested);
+    using namespace Windows::UI::ApplicationSettings;
+    SettingsPane::GetForCurrentView()->CommandsRequested +=
+        ref new TypedEventHandler<SettingsPane^, SettingsPaneCommandsRequestedEventArgs^>
+            (this, &SDL_WinRTApp::OnSettingsPaneCommandsRequested);
 #endif
 }
 
@@ -488,49 +488,49 @@ void SDL_WinRTApp::Uninitialize()
 {
 }
 
-//#if WINAPI_FAMILY == WINAPI_FAMILY_APP
-//void SDL_WinRTApp::OnSettingsPaneCommandsRequested(
-//    Windows::UI::ApplicationSettings::SettingsPane ^p,
-//    Windows::UI::ApplicationSettings::SettingsPaneCommandsRequestedEventArgs ^args)
-//{
-//    using namespace Platform;
-//    using namespace Windows::UI::ApplicationSettings;
-//    using namespace Windows::UI::Popups;
-//
-//    String ^privacyPolicyURL = nullptr;     // a URL to an app's Privacy Policy
-//    String ^privacyPolicyLabel = nullptr;   // label/link text
-//    const char *tmpHintValue = NULL;        // SDL_GetHint-retrieved value, used immediately
-//    wchar_t *tmpStr = NULL;                 // used for UTF8 to UCS2 conversion
-//
-//    // Setup a 'Privacy Policy' link, if one is available (via SDL_GetHint):
-//    tmpHintValue = SDL_GetHint(SDL_HINT_WINRT_PRIVACY_POLICY_URL);
-//    if (tmpHintValue && tmpHintValue[0] != '\0') {
-//        // Convert the privacy policy's URL to UCS2:
-//        tmpStr = WIN_UTF8ToString(tmpHintValue);
-//        privacyPolicyURL = ref new String(tmpStr);
-//        SDL_free(tmpStr);
-//
-//        // Optionally retrieve custom label-text for the link.  If this isn't
-//        // available, a default value will be used instead.
-//        tmpHintValue = SDL_GetHint(SDL_HINT_WINRT_PRIVACY_POLICY_LABEL);
-//        if (tmpHintValue && tmpHintValue[0] != '\0') {
-//            tmpStr = WIN_UTF8ToString(tmpHintValue);
-//            privacyPolicyLabel = ref new String(tmpStr);
-//            SDL_free(tmpStr);
-//        } else {
-//            privacyPolicyLabel = ref new String(L"Privacy Policy");
-//        }
-//
-//        // Register the link, along with a handler to be called if and when it is
-//        // clicked:
-//        auto cmd = ref new SettingsCommand(L"privacyPolicy", privacyPolicyLabel,
-//            ref new UICommandInvokedHandler([=](IUICommand ^) {
-//                Windows::System::Launcher::LaunchUriAsync(ref new Uri(privacyPolicyURL));
-//        }));
-//        args->Request->ApplicationCommands->Append(cmd);
-//    }
-//}
-//#endif // if WINAPI_FAMILY == WINAPI_FAMILY_APP
+#if WINAPI_FAMILY == WINAPI_FAMILY_APP
+void SDL_WinRTApp::OnSettingsPaneCommandsRequested(
+    Windows::UI::ApplicationSettings::SettingsPane ^p,
+    Windows::UI::ApplicationSettings::SettingsPaneCommandsRequestedEventArgs ^args)
+{
+    using namespace Platform;
+    using namespace Windows::UI::ApplicationSettings;
+    using namespace Windows::UI::Popups;
+
+    String ^privacyPolicyURL = nullptr;     // a URL to an app's Privacy Policy
+    String ^privacyPolicyLabel = nullptr;   // label/link text
+    const char *tmpHintValue = NULL;        // SDL_GetHint-retrieved value, used immediately
+    wchar_t *tmpStr = NULL;                 // used for UTF8 to UCS2 conversion
+
+    // Setup a 'Privacy Policy' link, if one is available (via SDL_GetHint):
+    tmpHintValue = SDL_GetHint(SDL_HINT_WINRT_PRIVACY_POLICY_URL);
+    if (tmpHintValue && tmpHintValue[0] != '\0') {
+        // Convert the privacy policy's URL to UCS2:
+        tmpStr = WIN_UTF8ToString(tmpHintValue);
+        privacyPolicyURL = ref new String(tmpStr);
+        SDL_free(tmpStr);
+
+        // Optionally retrieve custom label-text for the link.  If this isn't
+        // available, a default value will be used instead.
+        tmpHintValue = SDL_GetHint(SDL_HINT_WINRT_PRIVACY_POLICY_LABEL);
+        if (tmpHintValue && tmpHintValue[0] != '\0') {
+            tmpStr = WIN_UTF8ToString(tmpHintValue);
+            privacyPolicyLabel = ref new String(tmpStr);
+            SDL_free(tmpStr);
+        } else {
+            privacyPolicyLabel = ref new String(L"Privacy Policy");
+        }
+
+        // Register the link, along with a handler to be called if and when it is
+        // clicked:
+        auto cmd = ref new SettingsCommand(L"privacyPolicy", privacyPolicyLabel,
+            ref new UICommandInvokedHandler([=](IUICommand ^) {
+                Windows::System::Launcher::LaunchUriAsync(ref new Uri(privacyPolicyURL));
+        }));
+        args->Request->ApplicationCommands->Append(cmd);
+    }
+}
+#endif // if WINAPI_FAMILY == WINAPI_FAMILY_APP
 
 void SDL_WinRTApp::OnWindowSizeChanged(CoreWindow^ sender, WindowSizeChangedEventArgs^ args)
 {
