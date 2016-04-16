@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2015 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2016 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -158,7 +158,8 @@ SDL_RendererEventWatch(void *userdata, SDL_Event *event)
                 }
             } else if (event->window.event == SDL_WINDOWEVENT_MINIMIZED) {
                 renderer->hidden = SDL_TRUE;
-            } else if (event->window.event == SDL_WINDOWEVENT_RESTORED) {
+            } else if (event->window.event == SDL_WINDOWEVENT_RESTORED || 
+                       event->window.event == SDL_WINDOWEVENT_MAXIMIZED) {
                 if (!(SDL_GetWindowFlags(window) & SDL_WINDOW_HIDDEN)) {
                     renderer->hidden = SDL_FALSE;
                 }
@@ -457,7 +458,7 @@ SDL_CreateTexture(SDL_Renderer * renderer, Uint32 format, int access, int w, int
     if (IsSupportedFormat(renderer, format)) {
         if (renderer->CreateTexture(renderer, texture) < 0) {
             SDL_DestroyTexture(texture);
-            return 0;
+            return NULL;
         }
     } else {
         texture->native = SDL_CreateTexture(renderer,
@@ -1153,7 +1154,19 @@ UpdateLogicalSize(SDL_Renderer *renderer)
     /* Clear the scale because we're setting viewport in output coordinates */
     SDL_RenderSetScale(renderer, 1.0f, 1.0f);
 
-    if (SDL_fabs(want_aspect-real_aspect) < 0.0001) {
+    if (renderer->integer_scale) {
+        if (want_aspect > real_aspect) {
+            scale = (float)(w / renderer->logical_w);
+        } else {
+            scale = (float)(h / renderer->logical_h);
+        }
+        viewport.w = (int)SDL_ceil(renderer->logical_w * scale);
+        viewport.x = (w - viewport.w) / 2;
+        viewport.h = (int)SDL_ceil(renderer->logical_h * scale);
+        viewport.y = (h - viewport.h) / 2;
+
+        SDL_RenderSetViewport(renderer, &viewport);
+    } else if (SDL_fabs(want_aspect-real_aspect) < 0.0001) {
         /* The aspect ratios are the same, just scale appropriately */
         scale = (float)w / renderer->logical_w;
         SDL_RenderSetViewport(renderer, NULL);
@@ -1212,6 +1225,24 @@ SDL_RenderGetLogicalSize(SDL_Renderer * renderer, int *w, int *h)
     if (h) {
         *h = renderer->logical_h;
     }
+}
+
+int
+SDL_RenderSetIntegerScale(SDL_Renderer * renderer, SDL_bool enable)
+{
+    CHECK_RENDERER_MAGIC(renderer, -1);
+
+    renderer->integer_scale = enable;
+
+    return UpdateLogicalSize(renderer);
+}
+
+SDL_bool
+SDLCALL SDL_RenderGetIntegerScale(SDL_Renderer * renderer)
+{
+    CHECK_RENDERER_MAGIC(renderer, SDL_FALSE);
+
+    return renderer->integer_scale;
 }
 
 int

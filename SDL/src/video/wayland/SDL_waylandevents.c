@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2015 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2016 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -40,7 +40,6 @@
 #include <sys/select.h>
 #include <sys/mman.h>
 #include <poll.h>
-#include <errno.h>
 #include <unistd.h>
 #include <xkbcommon/xkbcommon.h>
 
@@ -302,9 +301,9 @@ keyboard_handle_enter(void *data, struct wl_keyboard *keyboard,
  
     window = wl_surface_get_user_data(surface);
 
-    input->keyboard_focus = window;
-    window->keyboard_device = input;
     if (window) {
+        input->keyboard_focus = window;
+        window->keyboard_device = input;
         SDL_SetKeyboardFocus(window->sdlwindow);
     }
 }
