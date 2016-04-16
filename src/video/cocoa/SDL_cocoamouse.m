@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2015 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2016 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -226,13 +226,15 @@ Cocoa_WarpMouseGlobal(int x, int y)
 
     Cocoa_HandleMouseWarp(point.x, point.y);
 
-    /* According to the docs, this was deprecated in 10.6, but it's still
-     * around. The substitute requires a CGEventSource, but I'm not entirely
-     * sure how we'd procure the right one for this event.
-     */
-    CGSetLocalEventsSuppressionInterval(0.0);
     CGWarpMouseCursorPosition(point);
-    CGSetLocalEventsSuppressionInterval(0.25);
+
+    /* CGWarpMouse causes a short delay by default, which is preventable by
+     * Calling this directly after. CGSetLocalEventsSuppressionInterval can also
+     * prevent it, but it's deprecated as of OS X 10.6.
+     */
+    if (!mouse->relative_mode) {
+        CGAssociateMouseAndMouseCursorPosition(YES);
+    }
 
     /* CGWarpMouseCursorPosition doesn't generate a window event, unlike our
      * other implementations' APIs. Send what's appropriate.

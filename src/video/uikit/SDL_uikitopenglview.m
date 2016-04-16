@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2015 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2016 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -88,12 +88,8 @@
             GLint maxsamples = 0;
             glGetIntegerv(GL_MAX_SAMPLES, &maxsamples);
 
-            /* Verify that the sample count is supported before creating any
-             * multisample Renderbuffers, to avoid generating GL errors. */
-            if (samples > maxsamples) {
-                SDL_SetError("Failed creating OpenGL ES framebuffer: Unsupported MSAA sample count");
-                return nil;
-            }
+            /* Clamp the samples to the max supported count. */
+            samples = MIN(samples, maxsamples);
         }
 
         if (sRGB) {

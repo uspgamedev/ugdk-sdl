@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2015 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2016 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -20,6 +20,14 @@
 */
 
 /* *INDENT-OFF* */
+
+#ifndef SDL_X11_MODULE
+#define SDL_X11_MODULE(modname)
+#endif
+
+#ifndef SDL_X11_SYM
+#define SDL_X11_SYM(rc,fn,params,args,ret)
+#endif
 
 SDL_X11_MODULE(BASEXLIB)
 SDL_X11_SYM(XSizeHints*,XAllocSizeHints,(void),(),return)
@@ -165,6 +173,7 @@ SDL_X11_SYM(KeySym,XkbKeycodeToKeysym,(Display* a,unsigned int b,int c,int d),(a
 #else
 SDL_X11_SYM(KeySym,XkbKeycodeToKeysym,(Display* a,KeyCode b,int c,int d),(a,b,c,d),return)
 #endif
+SDL_X11_SYM(Status,XkbGetState,(Display* a,unsigned int b,XkbStatePtr c),(a,b,c),return)
 #endif
 
 #if NeedWidePrototypes
@@ -283,6 +292,7 @@ SDL_X11_SYM(Status,XRRSetCrtcConfig,(Display *dpy, XRRScreenResources *resources
 SDL_X11_SYM(Atom*,XRRListOutputProperties,(Display *dpy, RROutput output, int *nprop),(dpy,output,nprop),return)
 SDL_X11_SYM(XRRPropertyInfo*,XRRQueryOutputProperty,(Display *dpy,RROutput output, Atom property),(dpy,output,property),return)
 SDL_X11_SYM(int,XRRGetOutputProperty,(Display *dpy,RROutput output, Atom property, long offset, long length, Bool _delete, Bool pending, Atom req_type, Atom *actual_type, int *actual_format, unsigned long *nitems, unsigned long *bytes_after, unsigned char **prop),(dpy,output,property,offset,length, _delete, pending, req_type, actual_type, actual_format, nitems, bytes_after, prop),return)
+SDL_X11_SYM(RROutput,XRRGetOutputPrimary,(Display *dpy,Window window),(dpy,window),return)
 #endif
 
 /* MIT-SCREEN-SAVER support */
@@ -308,6 +318,9 @@ SDL_X11_SYM(Bool,XF86VidModeQueryVersion,(Display *a,int *b,int *c),(a,b,c),retu
 SDL_X11_SYM(Bool,XF86VidModeSwitchToMode,(Display *a,int b,XF86VidModeModeInfo *c),(a,b,c),return)
 SDL_X11_SYM(Bool,XF86VidModeLockModeSwitch,(Display *a,int b,int c),(a,b,c),return)
 #endif
+
+#undef SDL_X11_MODULE
+#undef SDL_X11_SYM
 
 /* *INDENT-ON* */
 

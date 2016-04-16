@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2015 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2016 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -29,6 +29,7 @@
 #include "../../events/scancodes_xfree86.h"
 
 #include <X11/keysym.h>
+#include <X11/XKBlib.h>
 
 #include "imKStoUCS.h"
 
@@ -128,6 +129,7 @@ static const struct {
     { XK_Control_R, SDL_SCANCODE_RCTRL },
     { XK_Shift_R, SDL_SCANCODE_RSHIFT },
     { XK_Alt_R, SDL_SCANCODE_RALT },
+    { XK_ISO_Level3_Shift, SDL_SCANCODE_RALT },
     { XK_Meta_R, SDL_SCANCODE_RGUI },
     { XK_Super_R, SDL_SCANCODE_RGUI },
     { XK_Mode_switch, SDL_SCANCODE_MODE },
@@ -177,12 +179,12 @@ X11_KeyCodeToSDLScancode(Display *display, KeyCode keycode)
 }
 
 static Uint32
-X11_KeyCodeToUcs4(Display *display, KeyCode keycode)
+X11_KeyCodeToUcs4(Display *display, KeyCode keycode, unsigned char group)
 {
     KeySym keysym;
 
 #if SDL_VIDEO_DRIVER_X11_HAS_XKBKEYCODETOKEYSYM
-    keysym = X11_XkbKeycodeToKeysym(display, keycode, 0, 0);
+    keysym = X11_XkbKeycodeToKeysym(display, keycode, group, 0);
 #else
     keysym = X11_XKeycodeToKeysym(display, keycode, 0);
 #endif
@@ -300,8 +302,20 @@ X11_UpdateKeymap(_THIS)
     int i;
     SDL_Scancode scancode;
     SDL_Keycode keymap[SDL_NUM_SCANCODES];
+    unsigned char group = 0;
 
     SDL_GetDefaultKeymap(keymap);
+    
+#if SDL_VIDEO_DRIVER_X11_HAS_XKBKEYCODETOKEYSYM
+    {
+        XkbStateRec state;
+        if (X11_XkbGetState(data->display, XkbUseCoreKbd, &state) == Success) {
+            group = state.group;
+        }
+    }
+#endif
+
+
     for (i = 0; i < SDL_arraysize(data->key_layout); i++) {
         Uint32 key;
 
@@ -312,7 +326,7 @@ X11_UpdateKeymap(_THIS)
         }
 
         /* See if there is a UCS keycode for this scancode */
-        key = X11_KeyCodeToUcs4(data->display, (KeyCode)i);
+        key = X11_KeyCodeToUcs4(data->display, (KeyCode)i, group);
         if (key) {
             keymap[scancode] = key;
         } else {
